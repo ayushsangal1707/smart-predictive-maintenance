@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Predictive Maintenance System{% endblock %}</title>
+
+    <script>
+        // Runs before any CSS/content renders, to avoid a flash of the
+        // wrong theme. Priority: localStorage (the user's own toggle) ->
+        // this account's server-side default (Settings page) -> light.
+        (function () {
+            var saved = localStorage.getItem("theme");
+            var serverDefault = "{% if user.is_authenticated and user.preference.dark_mode_default %}dark{% else %}light{% endif %}";
+            var theme = saved || serverDefault;
+            if (theme === "dark") {
+                document.documentElement.classList.add("dark-mode");
+            }
+        })();
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    {% include "navbar.html" %}
+
+    <main class="container my-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    {% include "footer.html" %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/dark_mode.js' %}"></script>
+    {% if user.is_authenticated %}
+        <script>
+            window.NOTIFICATIONS_API = {
+                recent: "{% url 'maintenance:api_recent_notifications' %}",
+                unreadCount: "{% url 'maintenance:api_unread_count' %}",
+                markAllRead: "{% url 'maintenance:mark_all_notifications_read' %}",
+                viewAll: "{% url 'maintenance:notification_list' %}",
+                markReadTemplate: "{% url 'maintenance:mark_notification_read' pk=999999 %}"
+            };
+        </script>
+        <script src="{% static 'js/notifications.js' %}"></script>
+    {% endif %}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

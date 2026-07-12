@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h3 class="mb-3">Plant Overview</h3>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm">
+            <div class="card-body">
+                <div class="stat-label">Total Machines</div>
+                <div class="stat-value">{{ total_machines }}</div>
+                <div class="stat-sub text-muted">{{ active_machines }} active</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm">
+            <div class="card-body">
+                <div class="stat-label">Avg. Failure Probability</div>
+                <div class="stat-value">{% widthratio avg_failure_probability 1 100 %}%</div>
+                <div class="stat-sub text-muted">across machines with predictions</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm border-warning">
+            <div class="card-body">
+                <div class="stat-label">High Risk Machines</div>
+                <div class="stat-value text-warning">{{ risk_counts.HIGH }}</div>
+                <div class="stat-sub text-muted">needs attention soon</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm border-danger">
+            <div class="card-body">
+                <div class="stat-label">Critical Risk Machines</div>
+                <div class="stat-value text-danger">{{ risk_counts.CRITICAL }}</div>
+                <div class="stat-sub text-muted">immediate action recommended</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Maintenance Dashboard Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Open Maintenance Requests</div>
+                        <div class="stat-value">{{ maintenance_stats.open_count }}</div>
+                    </div>
+                    <a href="{% url 'maintenance:list' %}" class="btn btn-sm btn-outline-primary">View</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card shadow-sm border-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Overdue Requests</div>
+                        <div class="stat-value text-danger">{{ maintenance_stats.overdue_count }}</div>
+                    </div>
+                    <a href="{% url 'maintenance:list' %}?status=OPEN" class="btn btn-sm btn-outline-danger">Review</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card shadow-sm border-success">
+            <div class="card-body">
+                <div class="stat-label">Completed (Last 30 Days)</div>
+                <div class="stat-value text-success">{{ maintenance_stats.completed_last_30_days }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Risk Distribution + Monthly Report -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="card-title">Risk Level Distribution</h6>
+                <canvas id="riskDistributionChart" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="card-title">Monthly Report — Predictions Run vs. High/Critical Risk</h6>
+                <canvas id="monthlyReportChart" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Machine Sensor Trends -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h6 class="card-title mb-0">Machine Sensor Trends</h6>
+            <select id="machineSensorPicker" class="form-select" style="max-width: 320px;">
+                {% for m in all_machines %}
+                    <option value="{{ m.id }}" {% if selected_machine and m.id == selected_machine.id %}selected{% endif %}>
+                        {{ m.machine_code }} — {{ m.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <h6 class="text-center small text-muted">Temperature</h6>
+                <canvas id="temperatureChart" height="200"></canvas>
+                <p id="temperatureNoData" class="text-muted text-center small d-none">No temperature sensor data for this machine.</p>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-center small text-muted">Pressure</h6>
+                <canvas id="pressureChart" height="200"></canvas>
+                <p id="pressureNoData" class="text-muted text-center small d-none">No pressure sensor data for this machine.</p>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-center small text-muted">Vibration</h6>
+                <canvas id="vibrationChart" height="200"></canvas>
+                <p id="vibrationNoData" class="text-muted text-center small d-none">No vibration sensor data for this machine.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Machine Health Grid -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h6 class="card-title mb-3">Machine Health</h6>
+
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-md-4">
+                <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search by name or code...">
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="department" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Departments</option>
+                    {% for value, label in department_choices %}
+                        <option value="{{ value }}" {% if department == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="risk_level" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Risk Levels</option>
+                    {% for value, label in risk_choices %}
+                        <option value="{{ value }}" {% if risk_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-primary">Search / Filter</button>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Machine</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Risk</th>
+                        <th>Failure Probability</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for machine in page_obj %}
+                    <tr>
+                        <td><a href="{% url 'equipment:detail' machine.pk %}">{{ machine.machine_code }} — {{ machine.name }}</a></td>
+                        <td>{{ machine.get_department_display }}</td>
+                        <td><span class="badge {{ machine.status_badge_class }}">{{ machine.get_status_display }}</span></td>
+                        <td>
+                            {% if machine.latest_prediction %}
+                                <span class="badge {{ machine.latest_prediction.risk_badge_class }}">{{ machine.latest_prediction.get_risk_level_display }}</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark border">No prediction yet</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if machine.latest_prediction %}
+                                {{ machine.latest_prediction.failure_probability|floatformat:2 }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td><a href="{% url 'predictions:machine_history' machine.pk %}" class="btn btn-sm btn-outline-secondary">Details</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No machines match your search/filters.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <nav aria-label="Machine grid pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ querystring }}">Previous</a></li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ querystring }}">Next</a></li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Alerts -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h6 class="card-title mb-3">Recent Alerts</h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Machine</th>
+                        <th>Risk</th>
+                        <th>Probability</th>
+                        <th>When</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alert in recent_alerts %}
+                    <tr>
+                        <td>{{ alert.machine.machine_code }} — {{ alert.machine.name }}</td>
+                        <td><span class="badge {{ alert.risk_badge_class }}">{{ alert.get_risk_level_display }}</span></td>
+                        <td>{{ alert.failure_probability|floatformat:2 }}</td>
+                        <td>{{ alert.predicted_at }}</td>
+                        <td><a href="{% url 'predictions:detail' alert.pk %}" class="btn btn-sm btn-outline-secondary">View</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No High/Critical risk alerts right now. 🎉</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="text-muted small mb-0">
+            Alerts are currently derived from High/Critical risk predictions.
+            A dedicated alert workflow (acknowledge / assign / resolve) is added in the Maintenance module.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script id="risk-distribution-data" type="application/json">{{ risk_counts_json|safe }}</script>
+<script id="monthly-report-data" type="application/json">{{ monthly_report_json|safe }}</script>
+<script id="sensor-charts-data" type="application/json">{{ sensor_charts_json|safe }}</script>
+<script>
+    window.DASHBOARD_MACHINE_API_URL_TEMPLATE = "{% url 'dashboard:api_machine_data' machine_id=999999 %}";
+</script>
+<script src="{% static 'js/dashboard_charts.js' %}"></script>
+{% endblock %}

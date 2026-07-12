@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ machine.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h3 class="mb-0">{{ machine.name }}</h3>
+        <span class="text-muted">{{ machine.machine_code }}</span>
+    </div>
+    <div>
+        <span class="badge {{ machine.status_badge_class }} fs-6">{{ machine.get_status_display }}</span>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Type:</strong> {{ machine.get_machine_type_display }}</p>
+                <p><strong>Department:</strong> {{ machine.get_department_display }}</p>
+                <p><strong>Location:</strong> {{ machine.location|default:"—" }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Manufacturer:</strong> {{ machine.manufacturer|default:"—" }}</p>
+                <p><strong>Installation Date:</strong> {{ machine.installation_date }} ({{ machine.age_in_days }} days in service)</p>
+                <p><strong>Added By:</strong> {{ machine.created_by|default:"—" }}</p>
+            </div>
+        </div>
+        {% if machine.description %}
+            <hr>
+            <p>{{ machine.description|linebreaks }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Predictive Maintenance Status</h6>
+            <a href="{% url 'predictions:run' %}?machine={{ machine.pk }}" class="btn btn-sm btn-primary">Run Prediction</a>
+        </div>
+        {% if latest_prediction %}
+            <p class="mt-2 mb-1">
+                <span class="badge {{ latest_prediction.risk_badge_class }}">{{ latest_prediction.get_risk_level_display }} Risk</span>
+                — {{ latest_prediction.failure_probability|floatformat:2 }} probability,
+                as of {{ latest_prediction.predicted_at }}
+            </p>
+            <a href="{% url 'predictions:machine_history' machine.pk %}" class="small">View full prediction history &rarr;</a>
+        {% else %}
+            <p class="mt-2 mb-0 text-muted">No predictions have been run yet for this machine.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="d-flex gap-2">
+    <a href="{% url 'equipment:list' %}" class="btn btn-outline-secondary">Back to List</a>
+    {% if request.role == "ADMIN" or request.role == "ENGINEER" %}
+        <a href="{% url 'equipment:update' machine.pk %}" class="btn btn-primary">Edit</a>
+        <a href="{% url 'equipment:delete' machine.pk %}" class="btn btn-outline-danger">Delete</a>
+    {% endif %}
+</div>
+{% endblock %}

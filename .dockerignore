@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+.env
+db.sqlite3
+staticfiles/
+media/
+*.log
+.venv/
+venv/
+.DS_Store
+README.md
+DEPLOYMENT.md
+01_architecture_planning.md

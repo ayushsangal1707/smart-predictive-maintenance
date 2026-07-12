@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Prediction History — {{ machine.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h3 class="mb-0">Prediction History</h3>
+        <span class="text-muted">{{ machine.name }} ({{ machine.machine_code }})</span>
+    </div>
+    <div class="text-end">
+        {% if latest %}
+            <span class="badge {{ latest.risk_badge_class }} fs-6">Current: {{ latest.get_risk_level_display }}</span>
+        {% endif %}
+        <br>
+        <a href="{% url 'predictions:run' %}?machine={{ machine.pk }}" class="btn btn-primary btn-sm mt-2">Run New Prediction</a>
+    </div>
+</div>
+
+{% if page_obj %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <canvas id="predictionTrendChart" height="90"></canvas>
+    </div>
+</div>
+{% endif %}
+
+<div class="table-responsive">
+    <table class="table table-hover bg-white align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Risk Level</th>
+                <th>Probability</th>
+                <th>Model Version</th>
+                <th>Predicted At</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in page_obj %}
+            <tr>
+                <td><span class="badge {{ p.risk_badge_class }}">{{ p.get_risk_level_display }}</span></td>
+                <td>{{ p.failure_probability|floatformat:2 }}</td>
+                <td>{{ p.model_version.version_name }}</td>
+                <td>{{ p.predicted_at }}</td>
+                <td><a href="{% url 'predictions:detail' p.pk %}" class="btn btn-sm btn-outline-secondary">View</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-4">No predictions yet for this machine.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script id="prediction-chart-data" type="application/json">{{ chart_data_json|safe }}</script>
+<script src="{% static 'js/prediction_charts.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,173 @@
+:root {
+    --smp-primary: #0d3b66;
+    --smp-accent: #ee6c4d;
+    --smp-success: #2a9d8f;
+    --smp-warning: #f4a261;
+    --smp-danger: #e63946;
+}
+
+body {
+    background-color: #f5f7fa;
+}
+
+.navbar-brand {
+    font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------
+   Auth pages (login / register / password reset / change password)
+   --------------------------------------------------------------------- */
+.auth-wrapper {
+    min-height: calc(100vh - 180px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+}
+
+.auth-card h2 {
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: var(--smp-primary);
+}
+
+.auth-card .btn-primary {
+    background-color: var(--smp-primary);
+    border-color: var(--smp-primary);
+    width: 100%;
+}
+
+.auth-card .btn-primary:hover {
+    background-color: #0a2e50;
+    border-color: #0a2e50;
+}
+
+.auth-links {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.password-strength-bar {
+    height: 5px;
+    border-radius: 3px;
+    background: #e0e0e0;
+    margin-top: 0.35rem;
+    overflow: hidden;
+}
+
+.password-strength-bar-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+/* ---------------------------------------------------------------------
+   Dashboard stat cards
+   --------------------------------------------------------------------- */
+.stat-card .stat-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--smp-primary);
+    line-height: 1.2;
+}
+
+.stat-card .stat-sub {
+    font-size: 0.8rem;
+}
+
+/* ---------------------------------------------------------------------
+   Dark Mode
+   Applied via a `.dark-mode` class on <html> (see base.html's inline
+   theme-detection script and static/js/dark_mode.js). Overrides are kept
+   scoped to this one block so the rest of the stylesheet stays a normal
+   light-theme file that's easy to read on its own.
+   --------------------------------------------------------------------- */
+html.dark-mode {
+    color-scheme: dark;
+}
+
+html.dark-mode body {
+    background-color: #12181f;
+    color: #e6e8eb;
+}
+
+html.dark-mode .card,
+html.dark-mode .list-group-item,
+html.dark-mode .modal-content {
+    background-color: #1b232c;
+    color: #e6e8eb;
+    border-color: #2a343f;
+}
+
+html.dark-mode .table {
+    color: #e6e8eb;
+}
+
+html.dark-mode .table-light,
+html.dark-mode .table-light > th,
+html.dark-mode .table-light > td {
+    background-color: #232d38;
+    color: #e6e8eb;
+}
+
+html.dark-mode .table-hover > tbody > tr:hover > * {
+    background-color: #232d38;
+    color: #e6e8eb;
+}
+
+html.dark-mode .form-control,
+html.dark-mode .form-select {
+    background-color: #232d38;
+    color: #e6e8eb;
+    border-color: #3a4553;
+}
+
+html.dark-mode .form-control:focus,
+html.dark-mode .form-select:focus {
+    background-color: #232d38;
+    color: #e6e8eb;
+}
+
+html.dark-mode .text-muted {
+    color: #9aa5b1 !important;
+}
+
+html.dark-mode .btn-outline-secondary {
+    color: #cfd6dd;
+    border-color: #4a5563;
+}
+
+html.dark-mode .stat-card .stat-value {
+    color: #7fb3e8;
+}
+
+html.dark-mode .dropdown-menu {
+    background-color: #1b232c;
+    border-color: #2a343f;
+}
+
+html.dark-mode .dropdown-item {
+    color: #e6e8eb;
+}
+
+html.dark-mode .dropdown-item:hover,
+html.dark-mode .dropdown-item:focus {
+    background-color: #232d38;
+    color: #ffffff;
+}

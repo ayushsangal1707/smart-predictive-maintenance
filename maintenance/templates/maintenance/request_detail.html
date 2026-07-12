@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}{{ maintenance_request.title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+    <div>
+        <h3 class="mb-0">{{ maintenance_request.title }}</h3>
+        <span class="text-muted">{{ maintenance_request.machine.machine_code }} — {{ maintenance_request.machine.name }}</span>
+    </div>
+    <div class="text-end">
+        <span class="badge {{ maintenance_request.priority_badge_class }}">{{ maintenance_request.get_priority_display }} Priority</span>
+        <span class="badge {{ maintenance_request.status_badge_class }}">{{ maintenance_request.get_status_display }}</span>
+        {% if maintenance_request.is_overdue %}<span class="badge bg-danger">Overdue</span>{% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <p>{{ maintenance_request.description|linebreaks|default:"No description provided." }}</p>
+                <p class="text-muted small mb-0">
+                    Requested by {{ maintenance_request.requested_by|default:"—" }} on {{ maintenance_request.created_at }}
+                    {% if maintenance_request.source_prediction %}
+                        — raised from a {{ maintenance_request.source_prediction.get_risk_level_display }} risk prediction
+                        (<a href="{% url 'predictions:detail' maintenance_request.source_prediction.pk %}">view prediction</a>)
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- History: merged status changes + comments -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h6 class="card-title mb-3">History</h6>
+                <ul class="list-unstyled timeline">
+                    {% for event in timeline %}
+                        {% if event.type == "status" %}
+                        <li class="mb-3">
+                            <span class="badge bg-light text-dark border">Status</span>
+                            <strong>{{ event.obj.changed_by|default:"System" }}</strong>
+                            changed status from <em>{{ event.obj.old_status|default:"—" }}</em> to
+                            <span class="badge {{ maintenance_request.status_badge_class }}">{{ event.obj.get_new_status_display }}</span>
+                            {% if event.obj.note %}— {{ event.obj.note }}{% endif %}
+                            <div class="text-muted small">{{ event.at }}</div>
+                        </li>
+                        {% else %}
+                        <li class="mb-3">
+                            <span class="badge bg-light text-dark border">Comment</span>
+                            <strong>{{ event.obj.author|default:"Unknown" }}</strong>: {{ event.obj.body }}
+                            <div class="text-muted small">{{ event.at }}</div>
+                        </li>
+                        {% endif %}
+                    {% empty %}
+                        <li class="text-muted">No activity yet.</li>
+                    {% endfor %}
+                </ul>
+
+                <form method="post" action="{% url 'maintenance:add_comment' maintenance_request.pk %}" class="mt-3">
+                    {% csrf_token %}
+                    {{ comment_form.body }}
+                    {% if comment_form.body.errors %}<div class="text-danger small">{{ comment_form.body.errors }}</div>{% endif %}
+                    <button type="submit" class="btn btn-primary btn-sm mt-2">Add Comment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h6 class="card-title">Details</h6>
+                <p class="mb-1"><strong>Assigned Engineer:</strong> {{ maintenance_request.assigned_engineer|default:"Unassigned" }}</p>
+                <p class="mb-1"><strong>Scheduled:</strong> {{ maintenance_request.scheduled_date|default:"Not scheduled" }}</p>
+                <p class="mb-0"><strong>Completed:</strong> {{ maintenance_request.completed_at|default:"—" }}</p>
+            </div>
+        </div>
+
+        {% if can_manage %}
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h6 class="card-title">Assign Engineer</h6>
+                <form method="post" action="{% url 'maintenance:assign' maintenance_request.pk %}">
+                    {% csrf_token %}
+                    {{ assign_form.engineer }}
+                    {% if assign_form.engineer.errors %}<div class="text-danger small">{{ assign_form.engineer.errors }}</div>{% endif %}
+                    <button type="submit" class="btn btn-primary btn-sm mt-2">Assign</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h6 class="card-title">Schedule</h6>
+                <form method="post" action="{% url 'maintenance:schedule' maintenance_request.pk %}">
+                    {% csrf_token %}
+                    {{ schedule_form.scheduled_date }}
+                    {% if schedule_form.scheduled_date.errors %}<div class="text-danger small">{{ schedule_form.scheduled_date.errors }}</div>{% endif %}
+                    <button type="submit" class="btn btn-primary btn-sm mt-2">Set Schedule</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h6 class="card-title">Update Status</h6>
+                <form method="post" action="{% url 'maintenance:update_status' maintenance_request.pk %}">
+                    {% csrf_token %}
+                    {{ status_form.status }}
+                    {{ status_form.note }}
+                    <button type="submit" class="btn btn-primary btn-sm mt-2">Update Status</button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-light border text-muted small">
+            Only an Admin, Manager, or the assigned engineer can manage this request's assignment/schedule/status.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Login | Smart Predictive Maintenance{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <h2 class="text-center">Sign In</h2>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="{{ form.username.id_for_id }}" class="form-label">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}<div class="text-danger small">{{ form.username.errors }}</div>{% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.password.id_for_id }}" class="form-label">Password</label>
+                <div class="input-group">
+                    {{ form.password }}
+                    <button class="btn btn-outline-secondary toggle-password" type="button"
+                            data-target="{{ form.password.id_for_id }}">Show</button>
+                </div>
+                {% if form.password.errors %}<div class="text-danger small">{{ form.password.errors }}</div>{% endif %}
+            </div>
+
+            <input type="hidden" name="next" value="{{ next }}">
+
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+
+        <div class="auth-links">
+            <a href="{% url 'accounts:password_reset' %}">Forgot your password?</a>
+            <p class="mt-2 mb-0">Don't have an account? <a href="{% url 'accounts:register' %}">Register</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/auth.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Maintenance Requests{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Maintenance Requests</h3>
+    <a href="{% url 'maintenance:create' %}" class="btn btn-primary">+ New Request</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search by title...">
+    </div>
+    <div class="col-md-2">
+        <select name="status" class="form-select" onchange="this.form.submit()">
+            <option value="">All Statuses</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="priority" class="form-select" onchange="this.form.submit()">
+            <option value="">All Priorities</option>
+            {% for value, label in priority_choices %}
+                <option value="{{ value }}" {% if priority == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="machine" class="form-select" onchange="this.form.submit()">
+            <option value="">All Machines</option>
+            {% for m in machines %}
+                <option value="{{ m.id }}" {% if machine_id == m.id|stringformat:"s" %}selected{% endif %}>{{ m.machine_code }} — {{ m.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2 form-check mt-2">
+        <input type="checkbox" name="my" value="1" class="form-check-input" id="myRequests"
+               {% if my_requests == "1" %}checked{% endif %} onchange="this.form.submit()">
+        <label class="form-check-label" for="myRequests">Assigned to me</label>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-hover bg-white align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Title</th>
+                <th>Machine</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Assigned Engineer</th>
+                <th>Scheduled</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in page_obj %}
+            <tr class="{% if r.is_overdue %}table-danger{% endif %}">
+                <td><a href="{% url 'maintenance:detail' r.pk %}">{{ r.title }}</a></td>
+                <td>{{ r.machine.machine_code }}</td>
+                <td><span class="badge {{ r.priority_badge_class }}">{{ r.get_priority_display }}</span></td>
+                <td><span class="badge {{ r.status_badge_class }}">{{ r.get_status_display }}</span></td>
+                <td>{{ r.assigned_engineer|default:"Unassigned" }}</td>
+                <td>
+                    {{ r.scheduled_date|default:"—" }}
+                    {% if r.is_overdue %}<span class="badge bg-danger">Overdue</span>{% endif %}
+                </td>
+                <td><a href="{% url 'maintenance:detail' r.pk %}" class="btn btn-sm btn-outline-secondary">View</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="text-center text-muted py-4">No maintenance requests found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<nav aria-label="Maintenance list pagination">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ querystring }}">Previous</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ querystring }}">Next</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

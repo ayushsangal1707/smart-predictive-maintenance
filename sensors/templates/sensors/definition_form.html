@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{% if is_edit %}Edit Sensor{% else %}Add Sensor{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title mb-3">{% if is_edit %}Edit Sensor Definition{% else %}Add Sensor Definition{% endif %}</h3>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Machine</label>
+                        {{ form.machine }}
+                        {% if form.machine.errors %}<div class="text-danger small">{{ form.machine.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Sensor Name</label>
+                        {{ form.sensor_name }}
+                        {% if form.sensor_name.errors %}<div class="text-danger small">{{ form.sensor_name.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Unit</label>
+                        {{ form.unit }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Normal Min</label>
+                            {{ form.normal_min }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Normal Max</label>
+                            {{ form.normal_max }}
+                        </div>
+                    </div>
+                    {% if form.non_field_errors %}{% endif %}
+
+                    <div class="form-check mb-3">
+                        {{ form.is_active }}
+                        <label class="form-check-label">Active</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">{% if is_edit %}Save Changes{% else %}Add Sensor{% endif %}</button>
+                    <a href="{% url 'sensors:definition_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

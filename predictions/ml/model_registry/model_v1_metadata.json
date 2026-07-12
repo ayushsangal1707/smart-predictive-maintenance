@@ -1,0 +1,56 @@
+{
+  "version_name": "v1",
+  "algorithm": "DecisionTreeClassifier",
+  "trained_at": "2026-07-08T19:44:47.115759+00:00",
+  "sklearn_version": "1.8.0",
+  "feature_columns": [
+    "temperature",
+    "vibration",
+    "pressure",
+    "rpm",
+    "cycle",
+    "temperature_roll_mean",
+    "vibration_roll_mean",
+    "pressure_roll_mean",
+    "rpm_roll_mean",
+    "temperature_roll_std",
+    "vibration_roll_std",
+    "pressure_roll_std",
+    "rpm_roll_std",
+    "temperature_rate_of_change",
+    "vibration_rate_of_change",
+    "pressure_rate_of_change",
+    "rpm_rate_of_change"
+  ],
+  "metrics": {
+    "accuracy": 0.9432,
+    "precision": 0.7298,
+    "recall": 0.8575,
+    "f1_score": 0.7885
+  },
+  "confusion_matrix": [
+    [
+      2714,
+      127
+    ],
+    [
+      57,
+      343
+    ]
+  ],
+  "comparison": {
+    "decision_tree": {
+      "accuracy": 0.9432,
+      "precision": 0.7298,
+      "recall": 0.8575,
+      "f1_score": 0.7885
+    },
+    "random_forest": {
+      "accuracy": 0.9457,
+      "precision": 0.78,
+      "recall": 0.78,
+      "f1_score": 0.78
+    }
+  },
+  "is_active": true
+}

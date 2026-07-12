@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title mb-3">Settings</h3>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-check form-switch mb-3">
+                        {{ form.dark_mode_default }}
+                        <label class="form-check-label" for="{{ form.dark_mode_default.id_for_id }}">
+                            Use Dark Mode by default on this account
+                        </label>
+                        <div class="form-text">
+                            Your browser's own toggle (top-right of the navbar) always overrides this once you've used it.
+                        </div>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        {{ form.email_notifications_enabled }}
+                        <label class="form-check-label" for="{{ form.email_notifications_enabled.id_for_id }}">
+                            Receive email alerts (maintenance assignments, critical risk predictions)
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                    <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">Back to Profile</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

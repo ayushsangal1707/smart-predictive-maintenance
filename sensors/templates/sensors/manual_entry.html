@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Manual Sensor Entry{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title mb-3">Manual Sensor Reading Entry</h3>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <form method="post" novalidate id="manual-entry-form">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Machine</label>
+                        {{ form.machine }}
+                        {% if form.machine.errors %}<div class="text-danger small">{{ form.machine.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Sensor</label>
+                        {{ form.sensor }}
+                        <div class="form-text">Sensor list narrows down once you pick a machine.</div>
+                        {% if form.sensor.errors %}<div class="text-danger small">{{ form.sensor.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Value</label>
+                        {{ form.value }}
+                        {% if form.value.errors %}<div class="text-danger small">{{ form.value.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Recorded At</label>
+                        {{ form.recorded_at }}
+                        {% if form.recorded_at.errors %}<div class="text-danger small">{{ form.recorded_at.errors }}</div>{% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save Reading</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.SENSORS_API_BASE = "/sensors/api/machines/";
+</script>
+<script src="{% static 'js/sensor_entry.js' %}"></script>
+{% endblock %}

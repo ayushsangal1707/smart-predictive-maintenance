@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Upload Sensor Data{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h3 class="card-title mb-3">Upload Sensor Readings (CSV / Excel)</h3>
+
+                <p class="text-muted small">
+                    File must include columns <code>sensor_name</code> and <code>value</code>.
+                    An optional <code>recorded_at</code> column (e.g. <code>2026-06-01 14:30</code>)
+                    may be included per row — rows without it default to the current time.
+                    Accepted formats: .csv, .xlsx, .xls (max 5 MB).
+                </p>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Machine</label>
+                        {{ form.machine }}
+                        {% if form.machine.errors %}<div class="text-danger small">{{ form.machine.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">File</label>
+                        {{ form.file }}
+                        {% if form.file.errors %}<div class="text-danger small">{{ form.file.errors }}</div>{% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </form>
+            </div>
+        </div>
+
+        {% if result %}
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Import Summary</h5>
+                <p>
+                    <span class="badge bg-success">{{ result.created }} imported</span>
+                    <span class="badge bg-warning text-dark">{{ result.skipped }} skipped</span>
+                </p>
+
+                {% if result.errors %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead><tr><th>Row</th><th>Error</th></tr></thead>
+                        <tbody>
+                            {% for err in result.errors %}
+                            <tr><td>{{ err.row }}</td><td class="text-danger">{{ err.message }}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

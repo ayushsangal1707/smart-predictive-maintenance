@@ -1,0 +1,105 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard:home' %}">
+    <img src="{% static 'images/bhel_logo.svg' %}"
+         alt="BHEL Logo"
+         height="45"
+         class="me-2">
+
+    <div>
+        <div class="fw-bold">Smart Predictive Maintenance System</div>
+        <small class="text-light">Bharat Heavy Electricals Limited</small>
+    </div>
+</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard:home' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'equipment:list' %}">Machines</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Sensor Data</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'sensors:history' %}">Reading History</a></li>
+                            <li><a class="dropdown-item" href="{% url 'sensors:manual_entry' %}">Manual Entry</a></li>
+                            <li><a class="dropdown-item" href="{% url 'sensors:upload' %}">Upload CSV/Excel</a></li>
+                            <li><a class="dropdown-item" href="{% url 'sensors:definition_list' %}">Sensor Definitions</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Predictions</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'predictions:run' %}">Run Prediction</a></li>
+                            <li><a class="dropdown-item" href="{% url 'predictions:list' %}">Prediction History</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'maintenance:list' %}">Maintenance</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Reports</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'reports:home' %}">Export Center</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Dark mode toggle -->
+                    <li class="nav-item">
+                        <button type="button" id="darkModeToggle" class="btn btn-outline-light btn-sm mx-1" title="Toggle dark mode">
+                            🌙
+                        </button>
+                    </li>
+
+                    <!-- Notifications -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" id="notificationBell">
+                            🔔
+                            <span id="notificationBadge" class="badge rounded-pill bg-danger d-none" style="font-size: 0.6rem;">0</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" id="notificationDropdown" style="min-width: 320px;">
+                            <li class="px-3 py-2 text-muted small" id="notificationEmptyMsg">No notifications yet.</li>
+                        </ul>
+                    </li>
+
+                    <!-- User menu -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            {{ user.get_username }}
+                            {% if request.role %}<span class="badge bg-secondary">{{ request.role|title }}</span>{% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:settings' %}">Settings</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:password_change' %}">Change Password</a></li>
+                            {% if request.role == "ADMIN" %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'core:audit_log_list' %}">Audit Logs</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="{% url 'accounts:logout' %}" class="px-3">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-link dropdown-item p-0">Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:register' %}">Register</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

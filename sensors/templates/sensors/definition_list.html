@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Sensor Definitions{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Sensor Definitions</h3>
+    {% if request.role == "ADMIN" or request.role == "ENGINEER" %}
+        <a href="{% url 'sensors:definition_create' %}" class="btn btn-primary">+ Add Sensor</a>
+    {% endif %}
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <select name="machine" class="form-select" onchange="this.form.submit()">
+            <option value="">All Machines</option>
+            {% for m in machines %}
+                <option value="{{ m.id }}" {% if selected_machine == m.id|stringformat:"s" %}selected{% endif %}>{{ m.machine_code }} — {{ m.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-hover bg-white align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Sensor</th>
+                <th>Machine</th>
+                <th>Unit</th>
+                <th>Normal Range</th>
+                <th>Active</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in definitions %}
+            <tr>
+                <td>{{ d.sensor_name }}</td>
+                <td>{{ d.machine.machine_code }} — {{ d.machine.name }}</td>
+                <td>{{ d.get_unit_display }}</td>
+                <td>{{ d.normal_min }} – {{ d.normal_max }}</td>
+                <td>
+                    {% if d.is_active %}
+                        <span class="badge bg-success">Active</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    {% if request.role == "ADMIN" or request.role == "ENGINEER" %}
+                        <a href="{% url 'sensors:definition_update' d.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <a href="{% url 'sensors:definition_delete' d.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No sensor definitions yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

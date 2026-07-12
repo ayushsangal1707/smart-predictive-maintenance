@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{% if is_edit %}Edit Machine{% else %}Add Machine{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title mb-3">{% if is_edit %}Edit Machine{% else %}Add New Machine{% endif %}</h3>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Machine Code</label>
+                            {{ form.machine_code }}
+                            {% if form.machine_code.errors %}<div class="text-danger small">{{ form.machine_code.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Machine Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Machine Type</label>
+                            {{ form.machine_type }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Department</label>
+                            {{ form.department }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Location</label>
+                            {{ form.location }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Manufacturer</label>
+                            {{ form.manufacturer }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Installation Date</label>
+                            {{ form.installation_date }}
+                            {% if form.installation_date.errors %}<div class="text-danger small">{{ form.installation_date.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status</label>
+                            {{ form.status }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        {{ form.description }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        {% if is_edit %}Save Changes{% else %}Add Machine{% endif %}
+                    </button>
+                    <a href="{% if is_edit %}{% url 'equipment:detail' machine.pk %}{% else %}{% url 'equipment:list' %}{% endif %}"
+                       class="btn btn-outline-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Prediction History{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">All Predictions</h3>
+    <a href="{% url 'predictions:run' %}" class="btn btn-primary">+ Run New Prediction</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <select name="machine" class="form-select" onchange="this.form.submit()">
+            <option value="">All Machines</option>
+            {% for m in machines %}
+                <option value="{{ m.id }}" {% if machine_id == m.id|stringformat:"s" %}selected{% endif %}>{{ m.machine_code }} — {{ m.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="risk_level" class="form-select" onchange="this.form.submit()">
+            <option value="">All Risk Levels</option>
+            {% for value, label in risk_choices %}
+                <option value="{{ value }}" {% if risk_level == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <input type="date" name="date_from" value="{{ date_from }}" class="form-control" title="From date">
+    </div>
+    <div class="col-md-2">
+        <input type="date" name="date_to" value="{{ date_to }}" class="form-control" title="To date">
+    </div>
+    <div class="col-md-3 d-grid">
+        <button type="submit" class="btn btn-outline-primary">Filter</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-hover bg-white align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Machine</th>
+                <th>Risk Level</th>
+                <th>Probability</th>
+                <th>Model Version</th>
+                <th>Predicted At</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in page_obj %}
+            <tr>
+                <td>{{ p.machine.machine_code }} — {{ p.machine.name }}</td>
+                <td><span class="badge {{ p.risk_badge_class }}">{{ p.get_risk_level_display }}</span></td>
+                <td>{{ p.failure_probability|floatformat:2 }}</td>
+                <td>{{ p.model_version.version_name }}</td>
+                <td>{{ p.predicted_at }}</td>
+                <td><a href="{% url 'predictions:detail' p.pk %}" class="btn btn-sm btn-outline-secondary">View</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No predictions found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<nav aria-label="Prediction list pagination">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1&{{ querystring }}">First</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ querystring }}">Previous</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">First</span></li>
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}&{{ querystring }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ querystring }}">Next</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&{{ querystring }}">Last</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+            <li class="page-item disabled"><span class="page-link">Last</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
