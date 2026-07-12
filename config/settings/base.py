@@ -82,7 +82,11 @@ DATABASES = {
 
 print("DATABASE_URL =", os.environ.get("DATABASE_URL"))
 print("DB_HOST =", os.environ.get("DB_HOST"))
-
+print("=" * 60)
+print("DATABASE_URL:", repr(os.environ.get("DATABASE_URL")))
+print("DB_HOST:", repr(os.environ.get("DB_HOST")))
+print("DB_PORT:", repr(os.environ.get("DB_PORT")))
+print("=" * 60)
 if os.environ.get("DATABASE_URL"):
     DATABASES["default"] = dj_database_url.parse(
         os.environ["DATABASE_URL"],
