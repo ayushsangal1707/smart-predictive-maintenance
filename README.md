@@ -85,8 +85,7 @@ This starts PostgreSQL and the Django app (via Gunicorn + WhiteNoise), running m
 python predictions/ml/train.py
 python manage.py load_model_version v2   # registers the new version as active
 ```
-`train.py` explains every step (data generation, feature engineering, train/test split, evaluation) in its own output and comments — see Prompt 5 in the project history for the full methodology writeup.
-
+`train.py` explains every step (data generation, feature engineering, train/test split, evaluation) in its own output.
 ## Running Tests
 
 ```bash
