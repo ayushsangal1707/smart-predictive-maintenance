@@ -6,6 +6,7 @@ Environment-specific overrides live in dev.py and prod.py.
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -79,6 +80,14 @@ DATABASES = {
     }
 }
 
+print("DATABASE_URL =", os.environ.get("DATABASE_URL"))
+print("DB_HOST =", os.environ.get("DB_HOST"))
+
+if os.environ.get("DATABASE_URL"):
+    DATABASES["default"] = dj_database_url.parse(
+        os.environ["DATABASE_URL"],
+        conn_max_age=600,
+    )
 # ---------------------------------------------------------------------------
 # Password validation
 # ---------------------------------------------------------------------------
