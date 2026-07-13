@@ -1,10 +1,4 @@
-DATABASE_URL = None
-DB_HOST = localhost
-============================================================
-DATABASE_URL: None
-DB_HOST: 'localhost'
-DB_PORT: '5432'
-============================================================
+
 [
 {
   "model": "auth.user",
