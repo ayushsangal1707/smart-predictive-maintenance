@@ -76,47 +76,55 @@
             </div>
         </div>
 
-        {% if can_manage %}
-        <div class="card shadow-sm mb-3">
-            <div class="card-body">
-                <h6 class="card-title">Assign Engineer</h6>
-                <form method="post" action="{% url 'maintenance:assign' maintenance_request.pk %}">
-                    {% csrf_token %}
-                    {{ assign_form.engineer }}
-                    {% if assign_form.engineer.errors %}<div class="text-danger small">{{ assign_form.engineer.errors }}</div>{% endif %}
-                    <button type="submit" class="btn btn-primary btn-sm mt-2">Assign</button>
-                </form>
-            </div>
-        </div>
+        {% if can_assign %}
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <h6 class="card-title">Assign Engineer</h6>
+        <form method="post" action="{% url 'maintenance:assign' maintenance_request.pk %}">
+            {% csrf_token %}
+            {{ assign_form.engineer }}
+            {% if assign_form.engineer.errors %}<div class="text-danger small">{{ assign_form.engineer.errors }}</div>{% endif %}
+            <button type="submit" class="btn btn-primary btn-sm mt-2">Assign</button>
+        </form>
+    </div>
+</div>
+{% endif %}
 
-        <div class="card shadow-sm mb-3">
-            <div class="card-body">
-                <h6 class="card-title">Schedule</h6>
-                <form method="post" action="{% url 'maintenance:schedule' maintenance_request.pk %}">
-                    {% csrf_token %}
-                    {{ schedule_form.scheduled_date }}
-                    {% if schedule_form.scheduled_date.errors %}<div class="text-danger small">{{ schedule_form.scheduled_date.errors }}</div>{% endif %}
-                    <button type="submit" class="btn btn-primary btn-sm mt-2">Set Schedule</button>
-                </form>
-            </div>
-        </div>
+{% if can_schedule %}
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <h6 class="card-title">Schedule</h6>
+        <form method="post" action="{% url 'maintenance:schedule' maintenance_request.pk %}">
+            {% csrf_token %}
+            {{ schedule_form.scheduled_date }}
+            {% if schedule_form.scheduled_date.errors %}<div class="text-danger small">{{ schedule_form.scheduled_date.errors }}</div>{% endif %}
+            <button type="submit" class="btn btn-primary btn-sm mt-2">Set Schedule</button>
+        </form>
+    </div>
+</div>
+{% endif %}
 
-        <div class="card shadow-sm mb-3">
-            <div class="card-body">
-                <h6 class="card-title">Update Status</h6>
-                <form method="post" action="{% url 'maintenance:update_status' maintenance_request.pk %}">
-                    {% csrf_token %}
-                    {{ status_form.status }}
-                    {{ status_form.note }}
-                    <button type="submit" class="btn btn-primary btn-sm mt-2">Update Status</button>
-                </form>
-            </div>
-        </div>
-        {% else %}
-        <div class="alert alert-light border text-muted small">
-            Only an Admin, Manager, or the assigned engineer can manage this request's assignment/schedule/status.
-        </div>
-        {% endif %}
+{% if can_update_status %}
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <h6 class="card-title">Update Status</h6>
+        <form method="post" action="{% url 'maintenance:update_status' maintenance_request.pk %}">
+            {% csrf_token %}
+            {{ status_form.status }}
+            {{ status_form.note }}
+            <button type="submit" class="btn btn-primary btn-sm mt-2">Update Status</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% if not can_assign and not can_schedule and not can_update_status %}
+<div class="alert alert-light border text-muted small">
+    You can view this request and add comments, but you don't have permission to
+    assign, schedule, or update it. Only an Admin, a Manager, or the specific
+    engineer this request is assigned to can manage it.
+</div>
+{% endif %}
     </div>
 </div>
 {% endblock %}

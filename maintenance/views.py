@@ -17,18 +17,36 @@ from .services import add_comment, assign_engineer, build_timeline, change_statu
 PAGE_SIZE = 15
 
 
-def _can_manage(user, request_obj):
-    """
-    Admin/Manager can manage any request; the specific Engineer a request
-    is assigned to can also update its status/schedule (they're the one
-    doing the work) — but not reassign it to someone else, which stays an
-    Admin/Manager-only action (see request_assign below).
-    """
+def _is_admin_or_manager(user):
+    """True only for Admin/Manager roles — the single source of truth for
+    'has elevated maintenance privileges', used by every check below."""
     profile = getattr(user, "profile", None)
-    if profile and profile.role in (ROLE_ADMIN, ROLE_MANAGER):
+    return bool(profile and profile.role in (ROLE_ADMIN, ROLE_MANAGER))
+
+
+def _can_assign(user):
+    """Only Admin/Manager may assign an engineer to a request."""
+    return _is_admin_or_manager(user)
+
+
+def _can_schedule(user):
+    """
+    Only Admin/Manager may schedule maintenance. An assigned Engineer does
+    the work but does NOT control scheduling — this is intentionally
+    stricter than _can_update_status below.
+    """
+    return _is_admin_or_manager(user)
+
+
+def _can_update_status(user, request_obj):
+    """
+    Admin/Manager can update ANY request's status. An Engineer may update
+    status ONLY on a request they are specifically assigned to — never on
+    other Engineers' requests, and never to assign/reassign someone else.
+    """
+    if _is_admin_or_manager(user):
         return True
     return request_obj.assigned_engineer_id == user.id
-
 
 # ---------------------------------------------------------------------------
 # Maintenance Request: list, create, detail
@@ -125,7 +143,9 @@ def request_detail(request, pk):
     context = {
         "maintenance_request": maintenance_request,
         "timeline": build_timeline(maintenance_request),
-        "can_manage": _can_manage(request.user, maintenance_request),
+        "can_assign": _can_assign(request.user),
+        "can_schedule": _can_schedule(request.user),
+        "can_update_status": _can_update_status(request.user, maintenance_request),
         "assign_form": AssignEngineerForm(),
         "schedule_form": ScheduleForm(),
         "status_form": StatusUpdateForm(initial={"status": maintenance_request.status}),
@@ -142,8 +162,7 @@ def request_detail(request, pk):
 @require_POST
 def request_assign(request, pk):
     maintenance_request = get_object_or_404(MaintenanceRequest, pk=pk)
-    profile = getattr(request.user, "profile", None)
-    if not (profile and profile.role in (ROLE_ADMIN, ROLE_MANAGER)):
+    if not _can_assign(request.user):
         messages.error(request, "Only an Admin or Manager can assign an engineer.")
         return redirect("maintenance:detail", pk=pk)
 
@@ -162,10 +181,10 @@ def request_assign(request, pk):
 @require_POST
 def request_schedule(request, pk):
     maintenance_request = get_object_or_404(MaintenanceRequest, pk=pk)
-    if not _can_manage(request.user, maintenance_request):
-        messages.error(request, "You don't have permission to schedule this request.")
+    if not _can_schedule(request.user):
+        messages.error(request, "Only an Admin or Manager can schedule maintenance.")
         return redirect("maintenance:detail", pk=pk)
-
+    
     form = ScheduleForm(request.POST)
     if form.is_valid():
         schedule_request(maintenance_request, form.cleaned_data["scheduled_date"], changed_by=request.user)
@@ -180,7 +199,7 @@ def request_schedule(request, pk):
 @require_POST
 def request_update_status(request, pk):
     maintenance_request = get_object_or_404(MaintenanceRequest, pk=pk)
-    if not _can_manage(request.user, maintenance_request):
+    if not _can_update_status(request.user, maintenance_request):
         messages.error(request, "You don't have permission to update this request's status.")
         return redirect("maintenance:detail", pk=pk)
 
